@@ -179,6 +179,7 @@ async function checkFuelTypeMismatch(player: alt.Player, vehicle: alt.Vehicle) {
             engineBreakdownTimers.add(vehicle.id);
 
             const interval = alt.setInterval(async () => {
+                if (!vehicle.valid) alt.clearInterval(interval);
                 const currentHealth = vehicle.engineHealth;
                 const newHealth = Math.max(0, currentHealth - 25);
 
