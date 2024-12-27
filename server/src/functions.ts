@@ -177,20 +177,23 @@ async function checkFuelTypeMismatch(player: alt.Player, vehicle: alt.Vehicle) {
     if (ascendedFuel && ascendedFuel.typeTanked !== ascendedFuel.type) {
         if (!engineBreakdownTimers.has(vehicle.id)) {
             engineBreakdownTimers.add(vehicle.id);
+            try {
+                const interval = alt.setInterval(async () => {
+                    if (!vehicle.valid) alt.clearInterval(interval);
+                    const currentHealth = vehicle.engineHealth;
+                    const newHealth = Math.max(0, currentHealth - 25);
 
-            const interval = alt.setInterval(async () => {
-                if (!vehicle.valid) alt.clearInterval(interval);
-                const currentHealth = vehicle.engineHealth;
-                const newHealth = Math.max(0, currentHealth - 25);
+                    vehicle.engineHealth = newHealth;
 
-                vehicle.engineHealth = newHealth;
-
-                if (newHealth <= 0) {
-                    alt.clearInterval(interval);
-                    await breakEngine(player, vehicle);
-                    engineBreakdownTimers.delete(vehicle.id);
-                }
-            }, 1000);
+                    if (newHealth <= 0) {
+                        alt.clearInterval(interval);
+                        await breakEngine(player, vehicle);
+                        engineBreakdownTimers.delete(vehicle.id);
+                    }
+                }, 1000);
+            } catch (error) {
+                alt.logWarning(error);
+            }
         }
     } else {
         if (vehicle.engineHealth < 1000) {
